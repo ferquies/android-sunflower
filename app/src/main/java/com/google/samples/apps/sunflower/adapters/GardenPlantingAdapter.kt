@@ -21,22 +21,25 @@ import android.databinding.DataBindingUtil
 import android.support.v7.recyclerview.extensions.ListAdapter
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.findNavController
+import com.google.samples.apps.sunflower.GardenFragmentDirections
 import com.google.samples.apps.sunflower.R
 import com.google.samples.apps.sunflower.data.PlantAndGardenPlantings
 import com.google.samples.apps.sunflower.databinding.ListItemGardenPlantingBinding
 import com.google.samples.apps.sunflower.viewmodels.PlantAndGardenPlantingsViewModel
 
 class GardenPlantingAdapter(
-    val context: Context
+        val context: Context
 ) : ListAdapter<PlantAndGardenPlantings, GardenPlantingAdapter.ViewHolder>(GardenPlantDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
-            DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context),
-                R.layout.list_item_garden_planting, parent, false
-            )
+                DataBindingUtil.inflate(
+                        LayoutInflater.from(parent.context),
+                        R.layout.list_item_garden_planting, parent, false
+                )
         )
     }
 
@@ -44,20 +47,28 @@ class GardenPlantingAdapter(
         getItem(position).let { plantings ->
             with(holder) {
                 itemView.tag = plantings
-                bind(plantings)
+                bind(createOnClickListener(plantings.plant!!.plantId), plantings)
             }
         }
     }
 
+    private fun createOnClickListener(plantId: String): View.OnClickListener {
+        return View.OnClickListener {
+            val direction = GardenFragmentDirections.ActionGardenFragmentToPlantDetailFragment(plantId)
+            it.findNavController().navigate(direction)
+        }
+    }
+
     class ViewHolder(
-        private val binding: ListItemGardenPlantingBinding
+            private val binding: ListItemGardenPlantingBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(plantings: PlantAndGardenPlantings) {
+        fun bind(listener: View.OnClickListener, plantings: PlantAndGardenPlantings) {
             with(binding) {
+                clickListener = listener
                 viewModel = PlantAndGardenPlantingsViewModel(
-                    itemView.context,
-                    plantings
+                        itemView.context,
+                        plantings
                 )
                 executePendingBindings()
             }
